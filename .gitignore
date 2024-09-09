@@ -4,6 +4,7 @@ include/
 share/
 etc/
 captured_frames/
+user_folder/
 pyvenv.cfg
 *__pycache__*
 *.DS_Store
