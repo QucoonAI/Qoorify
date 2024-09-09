@@ -1,100 +1,107 @@
 import streamlit as st
-import os
 import cv2
+from src.anti_spoof import spoof_predict
+import os
 import time
-from datetime import datetime
-import numpy as np
-
-
+from tensorflow.keras.models import load_model
 st.set_page_config(page_title="Streamlit WebCam App")
-st.title("Qoorify Prototype")
-st.caption("ID verification with OpenCV")
-user_name=st.text_input("Enter your name")
-if st.button('Start verification'):
 
-    cap = cv2.VideoCapture(0)
 
-    
-    frame_placeholder = st.empty()
+st.cache_data()
+def load_anti_spoof_model():
+    model = load_model("./model/face_antispoofing_model.h5")
+    return model
 
-    
-    frames = []
+model = load_anti_spoof_model()
 
-    start_time = time.time()
-    start_time_formatted = datetime.fromtimestamp(start_time)
-    start_time_str = start_time_formatted.strftime("%d-%m-%Y")
-    
-    def show_instruction_and_capture(instruction, delay=20, num_frames=3):
-        st.write(instruction)
-        start_time = time.time()
-        
-        
-        while time.time() - start_time < delay:
-            ret, frame = cap.read()
-            if not ret:
-                st.write("Video capture stopped or disconnected")
-                return False
-            frame = cv2.flip(frame, 1)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame_placeholder.image(frame, channels="RGB")
-        
-        time.sleep(2)
-        for _ in range(num_frames):
-            ret, frame = cap.read()
-            if not ret:
-                st.write("Video capture stopped or disconnected")
-                return False
-                        
-            frame = cv2.flip(frame, 1)
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frames.append(frame)
-            frame_placeholder.image(frame, channels="RGB")
-            
-            
-        
-        return True
 
-    
-    if cap.isOpened():
-        if not show_instruction_and_capture("Look straight at the camera", delay=4):
-            st.write("Failed to capture frames.")
-        
-        if not show_instruction_and_capture("Look to the left", delay=4):
-            st.write("Failed to capture frames.")
-        
-        if not show_instruction_and_capture("Look to the right", delay=4):
-            st.write("Failed to capture frames.")
+cap = cv2.VideoCapture(0)
+frame_placeholder = st.empty()
 
-    
-    cap.release()
-    cv2.destroyAllWindows()
-    
-    user_folder_path = os.path.join(r"C:\Users\emman\Documents\python machine learning\streamlit\user_folder", user_name)
+# Directory to save frames
+FRAME_DIR = "captured_frames"
+if not os.path.exists(FRAME_DIR):
+    os.makedirs(FRAME_DIR)
 
-    if not os.path.exists(user_folder_path):
-        os.makedirs(user_folder_path)
-   
-    
-    for i, captured_frame in enumerate(frames):
-        
-            st.image(captured_frame, caption=f"Captured Frame {i+1}", channels="RGB")
-            file_name = f"{user_name}_{i}__{start_time_str}.jpg"
-            file_path = os.path.join(user_folder_path, file_name)
-            success = cv2.imwrite(file_path,  cv2.cvtColor(captured_frame, cv2.COLOR_RGB2BGR))
-        
-            if success:
-                st.write(f"Saved: {file_path}")
+# Function to predict live/spoof based on three frames
+def predict_spoof(file_paths):
+    results = []
+    for file in file_paths:
+        prediction = spoof_predict(file, model)  # Replace this with your model prediction function
+        results.append(prediction)  # Assuming binary classification: 0 (spoof) or 1 (live)
+    return results
+
+# Streamlit UI Layout
+st.title("Live vs Spoof Detection")
+st.write("Look into the camera when prompted to verify you're not a spoof.")
+
+# Class to handle video processing from webcam
+class WebTest():
+    def __init__(self):
+        self.frames = []
+        self.frame_paths = []
+        self.current_step = "center"
+        self.instructions = {"center": "Look straight into the camera.",
+                             "right": "Turn your head to the right.",
+                             "left": "Turn your head to the left."}
+        self.result_message = None
+        self.frames_to_capture = 3
+
+    def transform(self, frame):
+        # img = frame.to_ndarray(format="bgr24")
+        img = frame
+
+        # Capture and save frames
+        if len(self.frames) < self.frames_to_capture:
+            st.info(self.instructions[self.current_step])
+            self.frames.append(img)
+            file_path = os.path.join(FRAME_DIR, f"{self.current_step}_{len(self.frames)}.jpg")
+            # cv2.imwrite(file_path, img)
+            cv2.imwrite(file_path,  cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            self.frame_paths.append(file_path)
+
+        # If enough frames are captured, run the model
+        if len(self.frames) == self.frames_to_capture:
+            predictions = predict_spoof(self.frame_paths)
+            print(predictions)
+            if all(pred < 0.5 for pred in predictions):  # Assuming threshold of 0.5 for live
+                self.result_message = "Check! You're good to go. Follow the next instruction."
+                if self.current_step == "center":
+                    self.current_step = "right"
+                elif self.current_step == "right":
+                    self.current_step = "left"
+                elif self.current_step == "left":
+                    self.result_message = "Verification Complete. You're verified!"
             else:
-                st.write(f"Failed to save: {file_path}")
-  
-        
+                self.result_message = "Spoof detected! Please try again."
 
-    
+            # Reset frames and file paths for the next instruction
+            self.frames = []
+            self.frame_paths = []
 
-    
-    
-    
-    
-    
+        # Display message
+        if self.result_message:
+            st.success(self.result_message)
+            self.result_message = None
 
+        return img
+
+# Start webcam stream and apply the video transformer
+
+
+if st.button('Start verification'):
+    start = time.time()
+    web = WebTest()
     
+    while cap.isOpened() and web.result_message!="Verification Complete. You're verified!":
+        ret, frame = cap.read()
+        frame = cv2.flip(frame, 1)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame_placeholder.image(frame, channels="RGB")
+        print(time.time() - start)
+        if time.time() - start >= 5:
+            web.transform(frame)
+            start = time.time()
+    
+    # cap.release()
+    # cv2.destroyAllWindows()
