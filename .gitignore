@@ -2,5 +2,8 @@ bin/
 lib/
 include/
 share/
+etc/
+captured_frames/
 pyvenv.cfg
+*__pycache__*
 *.DS_Store
