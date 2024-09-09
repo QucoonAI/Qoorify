@@ -12,6 +12,6 @@ def spoof_prdict(image_path):
     threshold = 0.5  
     prediction = model.predict(np.expand_dims(image_array, axis=0))[0]
     if prediction > threshold:
-        return "real"
-    else:
         return "spoof"
+    else:
+        return "real"
