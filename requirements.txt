@@ -88,8 +88,8 @@ streamlit==1.38.0
 tenacity==8.5.0
 tensorboard
 tensorboard-data-server
-tensorflow==2.16.0
-keras==2.16.0
+tensorflow==2.15.0
+keras==2.15.0
 tensorflow-estimator
 tensorflow-io-gcs-filesystem
 termcolor==2.4.0
@@ -103,4 +103,4 @@ wcwidth==0.2.13
 Werkzeug==3.0.4
 wrapt==1.15.0
 
-ml-dtypes==0.4.0
+ml-dtypes==0.2.0
