@@ -43,7 +43,7 @@ MarkupSafe==2.1.5
 matplotlib==3.9.2
 matplotlib-inline==0.1.7
 mdurl==0.1.2
-ml-dtypes==0.1.0
+
 namex==0.0.8
 narwhals==1.6.3
 nest-asyncio==1.6.0
@@ -86,7 +86,7 @@ streamlit==1.38.0
 tenacity==8.5.0
 tensorboard==2.15.2
 tensorboard-data-server==0.7.2
-tensorflow==2.15.0 --no-deps
+tensorflow==2.10.0 
 tensorflow-estimator==2.15.0
 tensorflow-io-gcs-filesystem==0.37.1
 termcolor==2.4.0
