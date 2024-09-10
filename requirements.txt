@@ -100,6 +100,6 @@ tzdata==2024.1
 urllib3==2.2.2
 wcwidth==0.2.13
 Werkzeug==3.0.4
-wrapt==1.14.1
+wrapt==1.15.0
 --only-binary=:all:
 ml-dtypes==0.2.0
