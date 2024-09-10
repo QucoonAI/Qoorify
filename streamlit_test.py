@@ -15,7 +15,7 @@ def load_anti_spoof_model():
 model = load_anti_spoof_model()
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 frame_placeholder = st.empty()
 
 # Directory to save frames
