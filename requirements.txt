@@ -102,5 +102,5 @@ urllib3==2.2.2
 wcwidth==0.2.13
 Werkzeug==3.0.4
 wrapt==1.11.0
-
+streamlit-webrtc
 ml-dtypes==0.2.0
