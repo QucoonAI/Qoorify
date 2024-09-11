@@ -53,13 +53,19 @@ class WebTest(VideoProcessorBase):
         }
         self.result_message = None
         self.frames_to_capture = 3
+        self.last_instruction_time = time.time()  # Initialize the time for instruction display
 
     def transform(self, frame):
         img = frame.to_ndarray(format="bgr24")
+        current_time = time.time()
+
+        # Display instructions every 5 seconds
+        if current_time - self.last_instruction_time >= 5:
+            self.last_instruction_time = current_time
+            st.info(self.instructions[self.current_step])
 
         # Capture and save frames
         if len(self.frames) < self.frames_to_capture:
-            st.info(self.instructions[self.current_step])
             self.frames.append(img)
             file_path = os.path.join(FRAME_DIR, f"{self.current_step}_{len(self.frames)}.jpg")
             cv2.imwrite(file_path, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
@@ -91,7 +97,7 @@ class WebTest(VideoProcessorBase):
 
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-# Start webcam stream and apply the video transformer
+# Initialize Streamlit session state
 if 'verification_started' not in st.session_state:
     st.session_state.verification_started = False
 
