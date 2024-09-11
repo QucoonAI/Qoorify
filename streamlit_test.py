@@ -7,8 +7,10 @@ from tensorflow.keras.models import load_model
 from streamlit_webrtc import webrtc_streamer, RTCConfiguration, VideoProcessorBase
 import av
 
+# Set page configuration
 st.set_page_config(page_title="Streamlit WebCam App")
 
+# Load the anti-spoofing model with caching
 @st.cache_data()
 def load_anti_spoof_model():
     model = load_model("./model/face_antispoofing_model.h5")
@@ -33,6 +35,12 @@ def predict_spoof(file_paths):
 st.title("Live vs Spoof Detection")
 st.write("Look into the camera when prompted to verify you're not a spoof.")
 
+# WebRTC Configuration
+RTC_CONFIGURATION = RTCConfiguration(
+    {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
+)
+
+# Class to handle video processing from webcam
 class WebTest(VideoProcessorBase):
     def __init__(self):
         self.frames = []
@@ -85,4 +93,4 @@ class WebTest(VideoProcessorBase):
 
 # Start webcam stream and apply the video transformer
 if st.button('Start verification'):
-    webrtc_streamer(key='key', video_processor_factory=WebTest)
+    webrtc_streamer(key='key', video_processor_factory=WebTest, rtc_configuration=RTC_CONFIGURATION)
