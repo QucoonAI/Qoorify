@@ -92,5 +92,11 @@ class WebTest(VideoProcessorBase):
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 # Start webcam stream and apply the video transformer
+if 'verification_started' not in st.session_state:
+    st.session_state.verification_started = False
+
 if st.button('Start verification'):
+    st.session_state.verification_started = True
+
+if st.session_state.verification_started:
     webrtc_streamer(key='key', video_processor_factory=WebTest, rtc_configuration=RTC_CONFIGURATION)
