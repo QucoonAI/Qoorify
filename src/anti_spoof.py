@@ -8,7 +8,7 @@ import os
 import cv2
 import numpy as np
 
-spoof_model = load_model("./model/face_antispoofing_model.h5")
+spoof_model = load_model("./model/face_antispoofing_model_with_qucoon.h5")
 liveliness_model= load_model('./model/classifier_epoch_09(2).keras')
 
 face_connections = mp.solutions.face_mesh.FACEMESH_TESSELATION
