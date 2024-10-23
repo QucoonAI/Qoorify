@@ -65,15 +65,15 @@ def spoof_predict(image_path, model):
     threshold = 0.5  
     prediction = model.predict(np.expand_dims(image_array, axis=0))[0]
     return prediction
-
+ 
 
 #LIVELINESS MODEL PREDICTIONS
 def live_predict(image_path, model):
     new_img_path = extract_mesh(image_path)
     datagen3 = ImageDataGenerator(rescale=1./255)
 
-    df = pd.DataFrame({'filename': new_img_path })
-
+    df = pd.DataFrame()
+    df["filename"]=[new_img_path]
     image = datagen3.flow_from_dataframe(
                 dataframe=df,
                 x_col='filename',       # Paths to the images
@@ -85,9 +85,8 @@ def live_predict(image_path, model):
     
     
     pred = model.predict(image)
-    prediction= pred.flatten
+    prediction= pred.flatten()
     return prediction    
-
 
 
 
@@ -111,7 +110,7 @@ def liveliness_right(im_path):
 def liveliness_left(im_path):
     
         pred1 = spoof_predict(im_path,spoof_model)
-        if (pred1 >= 0.5):
+        if (pred1 <= 0.5):
             pred2 = live_predict(im_path,liveliness_model)
         
             if (pred2 <= 0.5):
@@ -134,15 +133,16 @@ def Qoorify_spoof(im_path):
             print("failed....")
             return False
 
-def Qoorify_KYC(im_path):
-    check1= Qoorify_spoof(im_path)
-    check2= liveliness_right(im_path)
-    check3= liveliness_left(im_path)
+def Qoorify_KYC(im_path1,im_path2,im_path3):
+    check1= Qoorify_spoof(im_path1)
+    check2= liveliness_right(im_path2)
+    check3= liveliness_left(im_path3)
 
     if (check1 and check2 and check3) :
         return "complete"
     else:
         return False
+
 
     
 
