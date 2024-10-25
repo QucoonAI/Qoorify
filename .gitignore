@@ -8,3 +8,10 @@ user_folder/
 pyvenv.cfg
 *__pycache__*
 *.DS_Store
+
+# Local files for testing
+convert_to_jpg.py
+liveliness_data/
+test2.py
+test5.py
+test_liveliness.py
