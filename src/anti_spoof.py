@@ -8,7 +8,7 @@ import os
 import cv2
 import numpy as np
 
-spoof_model = load_model("./model/face_antispoofing_model_with_qucoon.h5")
+spoof_model = load_model("./model/face_antispoofing_model_with_qucoon (1).h5")
 liveliness_model= load_model('./model/classifier_epoch_09(2).keras')
 
 face_connections = mp.solutions.face_mesh.FACEMESH_TESSELATION
@@ -49,8 +49,13 @@ def extract_mesh(img_path):
 
     # Bitwise-AND mask and original image
     res = cv2.bitwise_and(img1,img1, mask= mask)
-    
-    output_img_path = img_path
+    root_dir = os.getcwd()  # Get the current working directory
+    meshes_path = os.path.join(root_dir, "meshes")
+
+    # Create the directory if it doesn't exist and retrieve its path
+    os.makedirs(meshes_path, exist_ok=True)
+
+    output_img_path = meshes_path + "/" + img_path.split("/")[-1]
     cv2.imwrite(output_img_path, res)
     return output_img_path
 
@@ -83,7 +88,6 @@ def live_predict(image_path, model):
                 seed=123,
                 shuffle=False)
     
-    
     pred = model.predict(image)
     prediction= pred.flatten()
     return prediction    
@@ -95,31 +99,31 @@ def live_predict(image_path, model):
 def liveliness_right(im_path):
     
         pred1 = spoof_predict(im_path, spoof_model)
-        if (pred1 >= 0.5):
+        if (pred1 < 0.5):
             pred2 = live_predict(im_path, liveliness_model)
 
             if  (pred2 >= 0.5):
                 return True
             else:
-                print("failed....")
-            return False
+                print("Failed....")
+                return False
         else:
-            print("failed....")
+            print("Failed....")
             return False
 
 def liveliness_left(im_path):
     
         pred1 = spoof_predict(im_path,spoof_model)
-        if (pred1 <= 0.5):
+        if (pred1 < 0.5):
             pred2 = live_predict(im_path,liveliness_model)
         
             if (pred2 <= 0.5):
                 return True
             else:
-                print("failed...")
-            return False
+                print("Failed...")
+                return False
         else:
-            print("failed...")
+            print("Failed...")
             return False
 
 
@@ -127,10 +131,10 @@ def Qoorify_spoof(im_path):
        
         pred1 = spoof_predict(im_path, spoof_model)
         
-        if (pred1 >= 0.5):
+        if (pred1 < 0.5):
             return True
         else:
-            print("failed....")
+            print("Failed....")
             return False
 
 def Qoorify_KYC(im_path1,im_path2,im_path3):
@@ -143,13 +147,8 @@ def Qoorify_KYC(im_path1,im_path2,im_path3):
     else:
         return False
 
-
-    
-
-    
-
-
-
-    
-
-
+if __name__ == "__main__":
+    # print(Qoorify_spoof("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/20241002_152536.mp4_546308.jpg"))
+    # print()
+    # print(liveliness_left("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/20241002_152536.mp4_546308.jpg"))
+    print(live_predict("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/VID-20241002-WA0010.mp4_886532.jpg", liveliness_model))
