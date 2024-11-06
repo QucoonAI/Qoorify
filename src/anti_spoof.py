@@ -7,6 +7,7 @@ import pandas as pd
 import os
 import cv2
 import numpy as np
+import tensorflow as tf
 
 spoof_model = load_model("./model/face_antispoofing_model_with_qucoon (1).h5")
 liveliness_model= load_model('./model/classifier_epoch_09(2).keras')
@@ -14,6 +15,20 @@ liveliness_model= load_model('./model/classifier_epoch_09(2).keras')
 face_connections = mp.solutions.face_mesh.FACEMESH_TESSELATION
 face_mesh=mp.solutions.face_mesh.FaceMesh()
 marks= mp.solutions.drawing_utils
+
+def data_generator(image_paths):
+    for image_path in image_paths:
+        image = load_image(image_path)  # Load your image here
+        image = preprocess_image(image)  # Preprocess your image here
+        yield tf.convert_to_tensor(image, dtype=tf.float32)
+
+def load_image(image_path):
+    # Implement your image loading logic here
+    return np.zeros((224, 224, 3))  # Example shape
+
+def preprocess_image(image):
+    # Implement your image preprocessing logic here
+    return image / 255.0  # Example preprocessing
 
 #FACIAL MESH EXTRACTION FROM IMAGES FOR LIVELINESS
 def extract_mesh(img_path):
@@ -73,26 +88,32 @@ def spoof_predict(image_path, model):
  
 
 #LIVELINESS MODEL PREDICTIONS
-def live_predict(image_path, model):
-    new_img_path = extract_mesh(image_path)
-    datagen3 = ImageDataGenerator(rescale=1./255)
+# def live_predict(image_path, model):
+#     new_img_path = extract_mesh(image_path)
+#     datagen3 = ImageDataGenerator(rescale=1./255)
 
-    df = pd.DataFrame()
-    df["filename"]=[new_img_path]
-    image = datagen3.flow_from_dataframe(
-                dataframe=df,
-                x_col='filename',       # Paths to the images
-                target_size=(224, 224), # Size of the input images
-                batch_size=16,          # Batch size
-                class_mode=None,        # No labels for inference
-                seed=123,
-                shuffle=False)
+#     df = pd.DataFrame()
+#     df["filename"]=[new_img_path]
+#     image = datagen3.flow_from_dataframe(
+#                 dataframe=df,
+#                 x_col='filename',       # Paths to the images
+#                 target_size=(224, 224), # Size of the input images
+#                 batch_size=16,          # Batch size
+#                 class_mode=None,        # No labels for inference
+#                 seed=123,
+#                 shuffle=False)
     
+#     pred = model.predict(image)
+#     prediction= pred.flatten()
+#     return prediction    
+
+def live_predict(image_path, model):
+    image = load_image(image_path)
+    image = preprocess_image(image)
+    image = np.expand_dims(image, axis=0)  # Add batch dimension
     pred = model.predict(image)
     prediction= pred.flatten()
-    return prediction    
-
-
+    return prediction
 
 #MAIN FUNCTIONS TO BE CALLED :
     
@@ -147,8 +168,10 @@ def Qoorify_KYC(im_path1,im_path2,im_path3):
     else:
         return False
 
+
+
 if __name__ == "__main__":
     # print(Qoorify_spoof("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/20241002_152536.mp4_546308.jpg"))
     # print()
-    # print(liveliness_left("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/20241002_152536.mp4_546308.jpg"))
-    print(live_predict("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/VID-20241002-WA0010.mp4_886532.jpg", liveliness_model))
+    print(liveliness_right("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/VID-20241002-WA0010.mp4_886532.jpg"))
+    # print(live_predict("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/VID-20241002-WA0010.mp4_886532.jpg", liveliness_model))
