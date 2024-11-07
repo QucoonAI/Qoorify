@@ -2,10 +2,9 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 import pandas as pd
 import os 
-from anti_spoof import liveliness_left,liveliness_right,Qoorify_spoof,Qoorify_KYC
+from src.anti_spoof import liveliness_left,liveliness_right,Qoorify_spoof,Qoorify_KYC
+
 app = FastAPI()
-
-
 
 @app.post("/liveliness/right/")
 async def liveliness_right_endpoint(image: UploadFile = File(...)):
@@ -84,7 +83,7 @@ async def kyc_check(image1: UploadFile = File(...),
 
     # Define KYC verification logic
     if liveliness_right_result and liveliness_left_result and not spoof_result:
-        return JSONResponse(content={"status": "KYC verification complete"})
+        return JSONResponse(content={"status": "Passed"})
     else:
-        return JSONResponse(content={"status": "KYC verification failed"})
+        return JSONResponse(content={"status": "Failed"})
 
