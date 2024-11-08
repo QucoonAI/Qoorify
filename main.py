@@ -8,6 +8,9 @@ app = FastAPI()
 
 @app.post("/liveliness/right/")
 async def liveliness_right_endpoint(image: UploadFile = File(...)):
+    """
+    Endpoint to check the liveliness of a right face image. Returns a JSON response with the result of the check.
+    """
     temp_dir = "./temp_images"
     os.makedirs(temp_dir, exist_ok=True)
 
@@ -25,6 +28,9 @@ async def liveliness_right_endpoint(image: UploadFile = File(...)):
 
 @app.post("/liveliness/left/")
 async def liveliness_left_endpoint(image: UploadFile = File(...)):
+    """
+    Endpoint to check the liveliness of a left face image. Returns a JSON response with the result of the check.
+    """
     temp_dir = "./temp_images"
     os.makedirs(temp_dir, exist_ok=True)
 
@@ -42,6 +48,9 @@ async def liveliness_left_endpoint(image: UploadFile = File(...)):
 
 @app.post("/spoof/")
 async def spoof_endpoint(image: UploadFile = File(...)):
+    """
+    Endpoint to check if an image is spoofed or not. Returns a JSON response with the result of the check.
+    """
     temp_dir = "./temp_images"
     os.makedirs(temp_dir, exist_ok=True)
 
@@ -58,9 +67,20 @@ async def spoof_endpoint(image: UploadFile = File(...)):
 
 
 @app.post("/kyc/")
-async def kyc_check(image1: UploadFile = File(...), 
-                    image2: UploadFile = File(...), 
-                    image3: UploadFile = File(...)):
+async def kyc_check(right_image: UploadFile = File(...), 
+                    left_image: UploadFile = File(...), 
+                    spoof_image: UploadFile = File(...)):
+    """
+    KYC verification endpoint. This endpoint takes three images as input:
+    - Right face image
+    - Left face image
+    - Spoof image
+
+    The endpoint returns a JSON response with the status of the KYC verification.
+    """
+    image1 = right_image
+    image2 = left_image
+    image3 = spoof_image
     # Save uploaded images temporarily
     temp_dir = "./temp_images"
     os.makedirs(temp_dir, exist_ok=True)
