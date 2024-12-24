@@ -32,6 +32,7 @@ def preprocess_image(image):
 
 #FACIAL MESH EXTRACTION FROM IMAGES FOR LIVELINESS
 def extract_mesh(img_path):
+
     img1 = cv2.imread(img_path)
         
     if img1 is None:
@@ -65,13 +66,14 @@ def extract_mesh(img_path):
     # Bitwise-AND mask and original image
     res = cv2.bitwise_and(img1,img1, mask= mask)
     root_dir = os.getcwd()  # Get the current working directory
-    meshes_path = os.path.join(root_dir, "meshes")
+    meshes_path = os.path.join(root_dir, "meshes/new mod right/")
 
     # Create the directory if it doesn't exist and retrieve its path
     os.makedirs(meshes_path, exist_ok=True)
 
     output_img_path = meshes_path + "/" + img_path.split("/")[-1]
     cv2.imwrite(output_img_path, res)
+    print(output_img_path)
     return output_img_path
 
 
@@ -88,32 +90,61 @@ def spoof_predict(image_path, model):
  
 
 #LIVELINESS MODEL PREDICTIONS
-# def live_predict(image_path, model):
-#     new_img_path = extract_mesh(image_path)
-#     datagen3 = ImageDataGenerator(rescale=1./255)
+def live_predict(image_path, model):
+    try:
+        new_img_path = extract_mesh(image_path)
+        # print("Successfully extracted mesh 1")
 
-#     df = pd.DataFrame()
-#     df["filename"]=[new_img_path]
-#     image = datagen3.flow_from_dataframe(
-#                 dataframe=df,
-#                 x_col='filename',       # Paths to the images
-#                 target_size=(224, 224), # Size of the input images
-#                 batch_size=16,          # Batch size
-#                 class_mode=None,        # No labels for inference
-#                 seed=123,
-#                 shuffle=False)
+        #datagen3 = ImageDataGenerator(rescale=1./255)
+        # print("Successfully extracted mesh 2")
+
+        # df = pd.DataFrame()
+        # df["filename"]=[new_img_path]
+        # image = datagen3.flow_from_dataframe(
+        #             dataframe=df,
+        #             x_col='filename',       # Paths to the images
+        #             target_size=(224, 224), # Size of the input images
+        #             batch_size=16,          # Batch size
+        #             class_mode=None,        # No labels for inference
+        #             seed=123,
+        #             shuffle=False)
+        
+        # image = load_img(new_img_path, target_size=(224, 224))
+        # print("Successfully extracted mesh 2")
+
+        datagen = ImageDataGenerator(
+            rescale=1./255
+        )
+        dataset = datagen.flow_from_directory(
+            "./meshes",  
+            target_size=(224, 224),
+            batch_size=16,
+            class_mode= "binary",   
+            seed=123,  
+            )
+        images, labels = dataset[0]
+
+        pred = model.predict(images)
+        # print("Successfully extracted mesh 3")
+        prediction = pred.flatten()
+        # print("Successfully extracted mesh 4")
+        print(f"Result {prediction}")
+        ## Delete the extracted mesh image
+        os.remove(new_img_path)
+        return prediction    
     
+    except Exception as e:
+        print("Error in predicting live image")
+        print(e)
+        return False
+    
+# def live_predict(image_path, model):
+#     image = load_image(image_path)
+#     image = preprocess_image(image)
+#     image = np.expand_dims(image, axis=0)  # Add batch dimension
 #     pred = model.predict(image)
 #     prediction= pred.flatten()
-#     return prediction    
-
-def live_predict(image_path, model):
-    image = load_image(image_path)
-    image = preprocess_image(image)
-    image = np.expand_dims(image, axis=0)  # Add batch dimension
-    pred = model.predict(image)
-    prediction= pred.flatten()
-    return prediction
+#     return prediction
 
 #MAIN FUNCTIONS TO BE CALLED :
     
@@ -122,8 +153,9 @@ def liveliness_right(im_path):
         pred1 = spoof_predict(im_path, spoof_model)
         if (pred1 < 0.5):
             pred2 = live_predict(im_path, liveliness_model)
+            print(pred2)
 
-            if  (pred2 >= 0.5):
+            if  (pred2 < 0.5):
                 return True
             else:
                 print("Failed....")
@@ -137,8 +169,9 @@ def liveliness_left(im_path):
         pred1 = spoof_predict(im_path,spoof_model)
         if (pred1 < 0.5):
             pred2 = live_predict(im_path,liveliness_model)
-        
-            if (pred2 <= 0.5):
+            print(pred2)
+
+            if (pred2 >= 0.5):
                 return True
             else:
                 print("Failed...")
@@ -159,9 +192,9 @@ def Qoorify_spoof(im_path):
             return False
 
 def Qoorify_KYC(im_path1,im_path2,im_path3):
-    check1= Qoorify_spoof(im_path1)
-    check2= liveliness_right(im_path2)
-    check3= liveliness_left(im_path3)
+    check1 = Qoorify_spoof(im_path1)
+    check2 = liveliness_right(im_path2)
+    check3 = liveliness_left(im_path3)
 
     if (check1 and check2 and check3) :
         return "complete"
@@ -171,7 +204,7 @@ def Qoorify_KYC(im_path1,im_path2,im_path3):
 
 
 if __name__ == "__main__":
-    # print(Qoorify_spoof("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/20241002_152536.mp4_546308.jpg"))
-    # print()
-    print(liveliness_right("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/VID-20241002-WA0010.mp4_886532.jpg"))
-    # print(live_predict("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/VID-20241002-WA0010.mp4_886532.jpg", liveliness_model))
+#     print(Qoorify_spoof("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/20241002_152536.mp4_546308.jpg"))
+#     print()
+    print(liveliness_right("/Users/mac/Downloads/Spoof-Images/output/20240920_125116.jpg"))
+#     print(live_predict("/Users/mac/Downloads/LCC_FASD 2 Augmented/LCC_FASD_training/real/VID-20241002-WA0010.mp4_886532.jpg", liveliness_model))

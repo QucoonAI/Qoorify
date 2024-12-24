@@ -49,7 +49,7 @@ async def liveliness_left_endpoint(image: UploadFile = File(...)):
 @app.post("/spoof/")
 async def spoof_endpoint(image: UploadFile = File(...)):
     """
-    Endpoint to check if an image is spoofed or not. Returns a JSON response with the result of the check.
+    Endpoint to check if an image is spoofed or not. Returns a JSON response with the result of the check. True if live image, False if spoofed.
     """
     temp_dir = "./temp_images"
     os.makedirs(temp_dir, exist_ok=True)
@@ -63,7 +63,7 @@ async def spoof_endpoint(image: UploadFile = File(...)):
     # Cleanup temporary image
     os.remove(temp_image_path)
 
-    return JSONResponse(content={"spoof": result})
+    return JSONResponse(content={"not-spoof": result})
 
 
 @app.post("/kyc/")
